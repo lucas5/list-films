@@ -1,8 +1,12 @@
 import React, { Component } from 'react'
 import { Text, View, StyleSheet, TouchableOpacity, Image } from 'react-native'
-import { TextInput, DefaultTheme } from 'react-native-paper'
-import { Button } from 'native-base'
-import api from '../services/api';
+import { TextInput, DefaultTheme, Button } from 'react-native-paper'
+//import { Button } from 'native-base'
+import api from '../../services/api';
+
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as UserActions from '../../store/actions/dataUser';
 
 const theme = {
     ...DefaultTheme,
@@ -14,11 +18,14 @@ const theme = {
     },
 };
 
-export default class Login extends Component {
+
+
+class Login extends Component {
 
     state = {
         username: '',
-        password: ''
+        password: '',
+        loading: false
     }
 
     setUsername = (username) => {
@@ -30,10 +37,23 @@ export default class Login extends Component {
     }
 
     auth = async () => {
-        const email = 'lucasexp2013@gmail.com';
-        const username = this.state.username;
-        const result = await api.get(`/user/${username}/${email}`);
-        console.log(result);
+
+        const user = {
+            username: this.state.username,
+            password: this.state.password
+        }
+
+        this.setState({ loading: true });
+
+        try {
+            const result = await api.post(`/user/auth`, user);
+            this.setState({ loading: false });
+            this.props.loginUser(result.data);
+            this.props.navigation.navigate('Home');
+        } catch (error) {
+            this.setState({ loading: false });
+            console.log(error);
+        }
     }
 
     render() {
@@ -42,7 +62,7 @@ export default class Login extends Component {
                 <View style={{ alignItems: 'center' }}>
                     <Image
                         style={styles.tinyLogo}
-                        source={require('../../assets/images/bilhete.png')}
+                        source={require('../../../assets/images/bilhete.png')}
                     />
                 </View>
 
@@ -54,6 +74,7 @@ export default class Login extends Component {
                         mode="flat"
                         style={{ backgroundColor: 'transparent' }}
                         theme={theme}
+                        autoCapitalize="none"
                     />
                     <TextInput
                         label='Password'
@@ -69,8 +90,8 @@ export default class Login extends Component {
                     </TouchableOpacity>
 
                     <View style={{ paddingTop: 30 }}>
-                        <Button block danger rounded onPress={this.auth}>
-                            <Text style={{ color: 'white', fontWeight: 'bold' }}>Entrar</Text>
+                        <Button mode="outlined" onPress={this.auth} color="red" loading={this.state.loading}>
+                            Entrar
                         </Button>
                     </View>
 
@@ -82,6 +103,14 @@ export default class Login extends Component {
         )
     }
 }
+
+const mapStateToProps = state => ({
+    userLogged: state.dataUser.userLogged
+});
+
+const mapDispatchToProps = dispatch => bindActionCreators(UserActions, dispatch)
+
+export default connect(mapStateToProps, mapDispatchToProps)(Login);
 
 const styles = StyleSheet.create({
     container: {
@@ -105,3 +134,4 @@ const styles = StyleSheet.create({
         height: 150,
     },
 });
+

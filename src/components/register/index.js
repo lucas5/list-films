@@ -58,7 +58,7 @@ export default class Register extends Component {
                 <View style={{ alignItems: 'center' }}>
                     <Image
                         style={styles.tinyLogo}
-                        source={require('../../assets/images/pluma.png')}
+                        source={require('../../../assets/images/pluma.png')}
                     />
                 </View>
 
